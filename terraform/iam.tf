@@ -25,7 +25,7 @@ resource "aws_s3_bucket_policy" "dev_user_s3_put" {
         Effect    = "Allow"
         Principal = { AWS = aws_iam_user.dev_user.arn }
         Action    = "s3:PutObject"
-        Resource  = "/*"
+        Resource  = "${aws_s3_bucket.assets.arn}/*"
       }
     ]
   })
