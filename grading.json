@@ -17,12 +17,12 @@
   "dev_user_access_key_id": {
     "sensitive": true,
     "type": "string",
-    "value": "AKIAU36XHCFNQM3U6267"
+    "value": "AKIAU36XHCFNYQXJTOVN"
   },
   "dev_user_secret_access_key": {
     "sensitive": true,
     "type": "string",
-    "value": "fi1WcO0a+sNZL1rhd85qqtlNU3Zv0qnCsySL37UJ"
+    "value": "qqb7U/UEVXkJvXbV5L4W8Q98RkhgAZDPF3U3SWoJ"
   },
   "region": {
     "sensitive": false,
