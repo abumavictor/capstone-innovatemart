@@ -1,0 +1,63 @@
+# InnovateMart Project Bedrock - Custom values for managed AWS data layer
+# Overrides the default in-cluster/in-memory persistence to use:
+#   - catalog -> Amazon RDS MySQL
+#   - orders  -> Amazon RDS PostgreSQL
+#   - carts   -> Amazon DynamoDB (via IRSA, no static credentials)
+#
+# Database credentials are NOT hardcoded here. They reference existing
+# Kubernetes secrets (catalog-db, orders-db) which are populated from
+# AWS Secrets Manager (see terraform/data-layer.tf).
+
+catalog:
+  app:
+    persistence:
+      provider: mysql
+      endpoint: "catalog-mysql-alt-soe-025-5344.cmbmky8cyf2n.us-east-1.rds.amazonaws.com:3306"
+      database: "catalog"
+      secret:
+        create: false
+        name: catalog-db
+  mysql:
+    create: false
+
+orders:
+  app:
+    persistence:
+      provider: postgres
+      endpoint: "orders-postgresql-alt-soe-025-5344.cmbmky8cyf2n.us-east-1.rds.amazonaws.com:5432"
+      database: "orders"
+      secret:
+        create: false
+        name: orders-db
+    messaging:
+      provider: rabbitmq
+      rabbitmq:
+        addresses:
+          - "orders-rabbitmq:5672"
+        secret:
+          create: true
+          name: orders-rabbitmq
+  postgresql:
+    create: false
+  rabbitmq:
+    create: true
+
+carts:
+  app:
+    persistence:
+      provider: dynamodb
+      dynamodb:
+        tableName: "carts-bedrock-alt-soe-025-5344"
+        createTable: false
+  dynamodb:
+    create: false
+  serviceAccount:
+    create: true
+    annotations:
+      eks.amazonaws.com/role-arn: "arn:aws:iam::334921929051:role/carts-irsa-role-alt-soe-025-5344"
+
+ui:
+  {}
+
+checkout:
+  {}

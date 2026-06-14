@@ -1,0 +1,28 @@
+apiVersion: v2
+name: innovatemart-retail-store
+description: InnovateMart Project Bedrock - Retail Store Sample App with managed AWS data layer (RDS MySQL, RDS PostgreSQL, DynamoDB)
+type: application
+version: 0.1.0
+appVersion: "1.6.1"
+
+dependencies:
+  - name: retail-store-sample-catalog-chart
+    version: "1.6.1"
+    repository: "oci://public.ecr.aws/aws-containers"
+    alias: catalog
+  - name: retail-store-sample-cart-chart
+    version: "1.6.1"
+    repository: "oci://public.ecr.aws/aws-containers"
+    alias: carts
+  - name: retail-store-sample-orders-chart
+    version: "1.6.1"
+    repository: "oci://public.ecr.aws/aws-containers"
+    alias: orders
+  - name: retail-store-sample-ui-chart
+    version: "1.6.1"
+    repository: "oci://public.ecr.aws/aws-containers"
+    alias: ui
+  - name: retail-store-sample-checkout-chart
+    version: "1.6.1"
+    repository: "oci://public.ecr.aws/aws-containers"
+    alias: checkout
