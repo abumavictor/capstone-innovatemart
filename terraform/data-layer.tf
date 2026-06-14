@@ -8,6 +8,17 @@ resource "aws_dynamodb_table" "carts" {
     type = "S"
   }
 
+  attribute {
+    name = "customerId"
+    type = "S"
+  }
+
+  global_secondary_index {
+    name            = "idx_global_customerId"
+    hash_key        = "customerId"
+    projection_type = "ALL"
+  }
+
   tags = {
     Project = "karatu-2025-capstone"
   }
@@ -134,3 +145,105 @@ resource "aws_db_instance" "orders_postgresql" {
 output "orders_postgresql_endpoint" {
   value = aws_db_instance.orders_postgresql.endpoint
 }
+
+# --- Secrets Manager for DB credentials ---
+
+resource "aws_secretsmanager_secret" "catalog_mysql" {
+  name = "catalog-mysql-credentials-${var.student_id}"
+
+  tags = {
+    Project = "karatu-2025-capstone"
+  }
+}
+
+resource "aws_secretsmanager_secret_version" "catalog_mysql" {
+  secret_id = aws_secretsmanager_secret.catalog_mysql.id
+  secret_string = jsonencode({
+    username = aws_db_instance.catalog_mysql.username
+    password = aws_db_instance.catalog_mysql.password
+    host     = aws_db_instance.catalog_mysql.address
+    port     = 3306
+    dbname   = aws_db_instance.catalog_mysql.db_name
+  })
+}
+
+resource "aws_secretsmanager_secret" "orders_postgresql" {
+  name = "orders-postgresql-credentials-${var.student_id}"
+
+  tags = {
+    Project = "karatu-2025-capstone"
+  }
+}
+
+resource "aws_secretsmanager_secret_version" "orders_postgresql" {
+  secret_id = aws_secretsmanager_secret.orders_postgresql.id
+  secret_string = jsonencode({
+    username = aws_db_instance.orders_postgresql.username
+    password = aws_db_instance.orders_postgresql.password
+    host     = aws_db_instance.orders_postgresql.address
+    port     = 5432
+    dbname   = aws_db_instance.orders_postgresql.db_name
+  })
+}
+
+output "catalog_mysql_secret_arn" {
+  value = aws_secretsmanager_secret.catalog_mysql.arn
+}
+
+output "orders_postgresql_secret_arn" {
+  value = aws_secretsmanager_secret.orders_postgresql.arn
+}
+
+# --- IAM user for carts DynamoDB access ---
+
+resource "aws_iam_user" "carts_dynamodb" {
+  name = "carts-dynamodb-user-${var.student_id}"
+
+  tags = {
+    Project = "karatu-2025-capstone"
+  }
+}
+
+resource "aws_iam_access_key" "carts_dynamodb_key" {
+  user = aws_iam_user.carts_dynamodb.name
+}
+
+resource "aws_iam_user_policy" "carts_dynamodb_policy" {
+  name = "carts-dynamodb-access-${var.student_id}"
+  user = aws_iam_user.carts_dynamodb.name
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "dynamodb:GetItem",
+          "dynamodb:PutItem",
+          "dynamodb:DeleteItem",
+          "dynamodb:UpdateItem",
+          "dynamodb:Query",
+          "dynamodb:Scan",
+          "dynamodb:DescribeTable"
+        ]
+        Resource = [
+          aws_dynamodb_table.carts.arn,
+          "${aws_dynamodb_table.carts.arn}/index/*"
+        ]
+      }
+    ]
+  })
+}
+
+output "carts_dynamodb_access_key_id" {
+  value     = aws_iam_access_key.carts_dynamodb_key.id
+  sensitive = true
+}
+
+output "carts_dynamodb_secret_access_key" {
+  value     = aws_iam_access_key.carts_dynamodb_key.secret
+  sensitive = true
+}
+
+
+
