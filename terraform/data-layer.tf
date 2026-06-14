@@ -247,3 +247,67 @@ output "carts_dynamodb_secret_access_key" {
 
 
 
+
+# --- IRSA for carts service account -> DynamoDB access ---
+
+data "aws_eks_cluster" "this" {
+  name = var.cluster_name
+}
+
+resource "aws_iam_role" "carts_irsa" {
+  name = "carts-irsa-role-${var.student_id}"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Federated = module.eks.oidc_provider_arn
+        }
+        Action = "sts:AssumeRoleWithWebIdentity"
+        Condition = {
+          StringEquals = {
+            "${module.eks.oidc_provider}:sub" = "system:serviceaccount:retail-app:carts"
+            "${module.eks.oidc_provider}:aud" = "sts.amazonaws.com"
+          }
+        }
+      }
+    ]
+  })
+
+  tags = {
+    Project = "karatu-2025-capstone"
+  }
+}
+
+resource "aws_iam_role_policy" "carts_irsa_policy" {
+  name = "carts-irsa-dynamodb-${var.student_id}"
+  role = aws_iam_role.carts_irsa.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "dynamodb:GetItem",
+          "dynamodb:PutItem",
+          "dynamodb:DeleteItem",
+          "dynamodb:UpdateItem",
+          "dynamodb:Query",
+          "dynamodb:Scan",
+          "dynamodb:DescribeTable"
+        ]
+        Resource = [
+          aws_dynamodb_table.carts.arn,
+          "${aws_dynamodb_table.carts.arn}/index/*"
+        ]
+      }
+    ]
+  })
+}
+
+output "carts_irsa_role_arn" {
+  value = aws_iam_role.carts_irsa.arn
+}
