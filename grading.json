@@ -27,6 +27,36 @@
   "retail_store_url": {
     "sensitive": false,
     "type": "string",
-    "value": "http://k8s-retailap-retailap-3c6aa53d7a-13413067.us-east-1.elb.amazonaws.com"
+    "value": "http://k8s-retailap-retailap-3c6aa53d7a-749658360.us-east-1.elb.amazonaws.com"
+  },
+  "catalog_mysql_endpoint": {
+    "sensitive": false,
+    "type": "string",
+    "value": "catalog-mysql-alt-soe-025-5344.cmbmky8cyf2n.us-east-1.rds.amazonaws.com:3306"
+  },
+  "catalog_mysql_secret_arn": {
+    "sensitive": false,
+    "type": "string",
+    "value": "arn:aws:secretsmanager:us-east-1:334921929051:secret:catalog-mysql-credentials-alt-soe-025-5344-BhM7a3"
+  },
+  "orders_postgresql_endpoint": {
+    "sensitive": false,
+    "type": "string",
+    "value": "orders-postgresql-alt-soe-025-5344.cmbmky8cyf2n.us-east-1.rds.amazonaws.com:5432"
+  },
+  "orders_postgresql_secret_arn": {
+    "sensitive": false,
+    "type": "string",
+    "value": "arn:aws:secretsmanager:us-east-1:334921929051:secret:orders-postgresql-credentials-alt-soe-025-5344-lfw3m1"
+  },
+  "carts_dynamodb_table_name": {
+    "sensitive": false,
+    "type": "string",
+    "value": "carts-bedrock-alt-soe-025-5344"
+  },
+  "carts_irsa_role_arn": {
+    "sensitive": false,
+    "type": "string",
+    "value": "arn:aws:iam::334921929051:role/carts-irsa-role-alt-soe-025-5344"
   }
 }
