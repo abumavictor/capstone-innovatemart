@@ -31,10 +31,29 @@ jobs:
 
     - name: Terraform Plan
       if: github.event_name == 'pull_request'
-      run: terraform plan -no-color
+      run: terraform plan -no-color -refresh=false
       working-directory: ./terraform
 
     - name: Terraform Apply
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-      run: terraform apply -auto-approve
+      run: terraform apply -auto-approve -refresh=false
       working-directory: ./terraform
+
+    - name: Configure kubectl
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      run: aws eks update-kubeconfig --region us-east-1 --name project-bedrock-cluster
+
+    - name: Deploy Kubernetes manifests
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      run: |
+        kubectl apply -f kubernetes/namespace.yaml
+        kubectl apply -f kubernetes/rbac.yaml
+        kubectl apply -f kubernetes/ingress.yaml
+
+    - name: Deploy application via Helm
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      run: |
+        helm upgrade --install innovatemart-retail-store helm/innovatemart-retail-store \
+          -f helm/innovatemart-retail-store/values.yaml \
+          --namespace retail-app \
+          --create-namespace
