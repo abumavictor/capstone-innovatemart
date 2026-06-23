@@ -50,6 +50,19 @@ jobs:
         kubectl apply -f kubernetes/rbac.yaml
         kubectl apply -f kubernetes/ingress.yaml
 
+    - name: Adopt existing resources for Helm
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      run: |
+        kubectl get all,secret,configmap -n retail-app -o name 2>/dev/null | while read resource; do
+          kubectl annotate "$resource" -n retail-app \
+            meta.helm.sh/release-name=innovatemart-retail-store \
+            meta.helm.sh/release-namespace=retail-app \
+            --overwrite 2>/dev/null || true
+          kubectl label "$resource" -n retail-app \
+            app.kubernetes.io/managed-by=Helm \
+            --overwrite 2>/dev/null || true
+        done
+
     - name: Deploy application via Helm
       if: github.ref == 'refs/heads/main' && github.event_name == 'push'
       run: |
